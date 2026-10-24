@@ -146,6 +146,24 @@ public class UploadFilesTest {
     }
 
     @Test
+    void shouldPutMappedFileInsideDestinationWhenDestinationHasNoTrailingSlash() throws Exception {
+        String namespace = "io.kestra." + IdUtils.create();
+
+        UploadFiles uploadFile = UploadFiles.builder()
+            .id(UploadFiles.class.getSimpleName())
+            .type(UploadFiles.class.getName())
+            .filesMap(Map.of("file.txt", addToStorage("application-test.yml").toString()))
+            .namespace(Property.ofValue(namespace))
+            .destination(Property.ofValue("/folder"))
+            .build();
+
+        RunContext runContext = TestsUtils.mockRunContext(this.runContextFactory, uploadFile, ImmutableMap.of());
+        uploadFile.run(runContext);
+
+        assertThat(runContext.storage().namespace(namespace).exists(Path.of("/folder/file.txt"))).isTrue();
+    }
+
+    @Test
     void shouldPutFileFromRegex() throws Exception {
         String namespace = "io.kestra." + IdUtils.create();
 
